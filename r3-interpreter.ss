@@ -1,5 +1,7 @@
 #lang racket
 
+
+;; ----- code -----
 (struct Scope (table parent))
 (struct Closure (f env))
 
@@ -17,7 +19,7 @@
 
 (define bind
   (lambda (x v env)
-    (let (new-env (ext-env env))
+    (let ([new-env (ext-env env)])
       (def x v new-env)
       new-env)))
 
@@ -44,9 +46,9 @@
       [(? number? x) x]
       [`(lambda (,x) ,e)
        (Closure exp env)]
-      [`(let ([,x ,e1]) ,e2)
+      [`(let ([,x ,e1]) ,e2 ...)
        (let ([v1 (interp e1 env)])
-         (interp e2 (ext-env x v1 env)))]
+         (interp `(begin ,@e2) (bind x v1 env)))]
       [`(define ,x ,e)
        (let ([v1 (interp e env)])
          (def x v1 env))]
@@ -59,7 +61,7 @@
              [v2 (interp e2 env)])
          (match v1
            [(Closure `(lambda (,x) ,e) env-save)
-            (interp e (ext-env x v2 env-save))]))]
+            (interp e (bind x v2 env-save))]))]
       [`(,op ,e1 ,e2)
        (let ([v1 (interp e1 env)]
              [v2 (interp e2 env)])
@@ -70,6 +72,39 @@
            ['/ (/ v1 v2)]))])))
 
 
-(define interpreter
+(define r3
   (lambda (exp)
     (interp exp env0)))
+
+
+;; ----- examples -----
+(r3
+ '(begin
+    (define x 1)
+    (define y 2)
+    (+ x y)))
+;; => 3
+
+(r3
+ '(begin
+    (let ([x 1])
+      (define f (lambda (y) (+ x y)))
+      (let ([x 2])
+        (f 0)))))
+;; => 1
+
+(r3
+ '(begin
+    (define x 1)
+    (define f (lambda (y) (+ x y)))
+    (let ([x 2])
+      (f 0))))
+;; => 1
+
+(r3
+ '(begin
+    (define x 1)
+    (define f (lambda (y) (+ x y)))
+    (define x 2)
+    (f 0)))
+;; => 2

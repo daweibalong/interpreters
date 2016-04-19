@@ -1,3 +1,4 @@
+;; ----- code -----
 (define tree-sum
   (lambda (exp)
     (match exp
@@ -8,7 +9,7 @@
          (+ v1 v2))])))
 
 
-
+;; ----- examples -----
 (tree-sum '(1 2))
 ;; => 3
 

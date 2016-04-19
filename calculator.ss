@@ -1,5 +1,6 @@
 #lang racket
 
+;; ----- code -----
 (define calc
   (lambda (exp)
     (match exp
@@ -14,7 +15,8 @@
            ['/ (/ v1 v2)]))])))
 
 
-;;; examples
+
+;; ----- examples -----
 (calc '(+ 1 2))
 ;; => 3
 

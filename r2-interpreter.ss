@@ -1,5 +1,7 @@
 #lang racket
 
+
+;; ----- code -----
 (struct Closure (f env))
 
 (define env0 '())
@@ -40,6 +42,37 @@
            ['* (* v1 v2)]
            ['/ (/ v1 v2)]))])))
 
-(define interpreter
+(define r2
   (lambda (exp)
     (interp exp env0)))
+
+
+
+;; ----- examples -----
+(r2 '(+ 1 2))
+;; => 3
+
+(r2 '(* 2 3))
+;; => 6
+
+(r2 '(* 2 (+ 3 4)))
+;; => 14
+
+(r2 '(* (+ 1 2) (+ 3 4)))
+;; => 21
+
+(r2 '((lambda (x) (* 2 x)) 3))
+;; => 6
+
+(r2
+'(let ([x 2])
+   (let ([f (lambda (y) (* x y))])
+     (f 3))))
+;; => 6
+
+(r2
+'(let ([x 2])
+   (let ([f (lambda (y) (* x y))])
+     (let ([x 4])
+       (f 3)))))
+;; => 6
