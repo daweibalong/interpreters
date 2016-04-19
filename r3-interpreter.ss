@@ -5,23 +5,21 @@
 (struct Scope (table parent))
 (struct Closure (f env))
 
-(define env0 (Scope (make-hash) #f))
-
-(define ext-env
+(define new-env
   (lambda (env)
-    (let* ([new-hash (make-hash)]
-           [new-env (Scope new-hash env)])
-      new-env)))
+    (Scope (make-hash) env)))
 
-(define def
+(define assign
   (lambda (x v env)
     (hash-set! (Scope-table env) x v)))
 
-(define bind
+(define env0 (new-env #f))
+
+(define ext-env
   (lambda (x v env)
-    (let ([new-env (ext-env env)])
-      (def x v new-env)
-      new-env)))
+    (let ([env+ (new-env env)])
+      (assign x v env+)
+      env+)))
 
 (define lookup
   (lambda (x env)
@@ -48,10 +46,10 @@
        (Closure exp env)]
       [`(let ([,x ,e1]) ,e2 ...)
        (let ([v1 (interp e1 env)])
-         (interp `(begin ,@e2) (bind x v1 env)))]
+         (interp `(begin ,@e2) (ext-env x v1 env)))]
       [`(define ,x ,e)
        (let ([v1 (interp e env)])
-         (def x v1 env))]
+         (assign x v1 env))]
       [`(begin ,e1 ... ,en)
        (for ([e e1])
          (interp e env))
@@ -66,7 +64,7 @@
              [v2 (interp e2 env)])
          (match v1
            [(Closure `(lambda (,x) ,e) env-save)
-            (interp e (bind x v2 env-save))]))]
+            (interp e (ext-env x v2 env-save))]))]
       [`(,op ,e1 ,e2)
        (let ([v1 (interp e1 env)]
              [v2 (interp e2 env)])
