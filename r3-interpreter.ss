@@ -56,6 +56,11 @@
        (for ([e e1])
          (interp e env))
        (interp en env)]
+      [`(if ,t ,e1 ,e2)
+       (let ([tval (interp t env)])
+         (if tval
+             (interp e1 env)
+             (interp e2 env)))]
       [`(,e1 ,e2)
        (let ([v1 (interp e1 env)]
              [v2 (interp e2 env)])
@@ -69,7 +74,10 @@
            ['+ (+ v1 v2)]
            ['- (- v1 v2)]
            ['* (* v1 v2)]
-           ['/ (/ v1 v2)]))])))
+           ['/ (/ v1 v2)]
+           ['= (= v1 v2)]
+           ['< (< v1 v2)]
+           ['> (> v1 v2)]))])))
 
 
 (define r3
@@ -85,6 +93,7 @@
     (+ x y)))
 ;; => 3
 
+
 (r3
  '(begin
     (let ([x 1])
@@ -92,6 +101,7 @@
       (let ([x 2])
         (f 0)))))
 ;; => 1
+
 
 (r3
  '(begin
@@ -101,6 +111,7 @@
       (f 0))))
 ;; => 1
 
+
 (r3
  '(begin
     (define x 1)
@@ -108,3 +119,25 @@
     (define x 2)
     (f 0)))
 ;; => 2
+
+
+(r3
+ '(begin
+    (define fact
+      (lambda (n)
+        (if (= n 0)
+            1
+            (* n (fact (- n 1))))))
+    (fact 5)))
+;; => 120
+
+
+(r3
+ '(begin
+    (define fib
+      (lambda (n)
+        (if (< n 2)
+            n
+            (+ (fib (- n 1)) (fib (- n 2))))))
+    (fib 9)))
+;; => 34
