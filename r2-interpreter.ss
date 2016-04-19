@@ -14,13 +14,18 @@
   (lambda (x env)
     (let ([p (assq x env)])
       (cond
-       [(not p) x]
+       [(not p) #f]
        [else (cdr p)]))))
 
 (define interp
   (lambda (exp env)
     (match exp
-      [(? symbol? x) (lookup x env)]
+      [(? symbol? x)
+       (let ([v (lookup x env)])
+         (cond
+          [(not v)
+           (error "undefined variable" x)]
+          [else v]))]
       [(? number? x) x]
       [`(lambda (,x) ,e)
        (Closure exp env)]
